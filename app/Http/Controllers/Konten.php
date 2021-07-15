@@ -79,7 +79,7 @@ class Konten extends Controller
 
     public function ubahKonten(Request $request) {
         $validator = Validator::make($request ->all(), [
-            'judul' => 'required | unique:tbl_konten,judul'.$request->id_konten.', id_konten',
+            'judul' => 'required | unique:tbl_konten,judul,'.$request->id_konten.',id_konten',
             'keterangan' => 'required',
             'link_thumbnail' => 'required',
             'link_video' => 'required',
@@ -134,5 +134,54 @@ class Konten extends Controller
             ]);
         }
     }
-}
+
+
+    public function hapusKonten(Request $request) {
+        $validator = Validator::make($request ->all(), [
+            'id_konten' => 'required',
+            'token' => 'required'
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => $validator->messages()
+            ]);
+        }
+
+        $token = $request->token;
+
+        $tokenDb = M_Admin::where('token', $token)->count();
+
+        if($tokenDb > 0) {
+            $key = env('APP_KEY');
+            $decoded = JWT::decode($token, $key, array('HS256'));
+            $decoded_array =(array) $decoded;
+
+            if($decoded_array['extime'] > time()) {
+                if(M_Materi::where('id_konten',$request->id_konten)->delete()) {
+                        return response()->json([
+                            'status' => 'berhasil',
+                            'message' => 'Data berhasil dihapus'
+                        ]);
+                } else {
+                    return response()->json([
+                        'status' => 'gagal',
+                        'message' => 'Data gagal dihapus'
+                    ]);
+                }
+
+            } else {
+                return response()->json([
+                    'status' => 'gagal',
+                    'message' => 'Token Kadaluwarsa'
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => 'Token Tidak Valid'
+            ]);
+        }
+    }
 }
