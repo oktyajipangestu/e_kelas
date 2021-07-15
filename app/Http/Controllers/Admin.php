@@ -174,4 +174,59 @@ class Admin extends Controller
             ]);
         }
     }
+
+
+    public function listAdmin(Request $request) {
+        $validator = Validator::make($request ->all(), [
+            'token' => 'required'
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => $validator->messages()
+            ]);
+        }
+
+        $token = $request->token;
+
+        $tokenDb = M_Admin::where('token', $token)->count();
+
+        if($tokenDb > 0) {
+            $key = env('APP_KEY');
+            $decoded = JWT::decode($token, $key, array('HS256'));
+            $decoded_array =(array) $decoded;
+
+            if($decoded_array['extime'] > time()) {
+                $admin = M_Admin::get();
+
+                $data = array();
+
+                foreach($admin as $adm) {
+                    $data[] = array(
+                        'nama' => $adm->nama,
+                        'email' => $adm->email,
+                        'id_user' => $adm->id_user
+                    );
+                }
+
+                return response()->json([
+                    'status' => 'berhasil',
+                    'message' => 'Data berhasil diambil',
+                    'data' => $data
+                ]);
+
+            } else {
+                return response()->json([
+                    'status' => 'gagal',
+                    'message' => 'Token Kadaluwarsa'
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => 'Token Tidak Valid'
+            ]);
+        }
+    }
 }
