@@ -76,7 +76,7 @@ class Admin extends Controller
 
     public function loginAdmin (Request $request) {
         $validator = Validator::make($request ->all(), [
-            'email' => 'required | unique:tbl_user',
+            'email' => 'required',
             'password' => 'required',
         ]);
 
@@ -99,6 +99,12 @@ class Admin extends Controller
                         'id_admin' => $adm->id_user
                     );
                     $jwt = JWT::encode($data, $key);
+
+                    M_Admin::where('id_user', $adm->id_user)->update(
+                        [
+                            'token' => $jwt
+                        ]
+                    );
                     return response()->json([
                         'status' => 'berhasil',
                         'message' => 'Berhasil login',
@@ -111,6 +117,61 @@ class Admin extends Controller
                     ]);
                 }
             }
+        } else {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => 'Email belum terdaftar'
+            ]);
+        }
+    }
+
+
+    public function hapusAdmin(Request $request) {
+        $validator = Validator::make($request ->all(), [
+            'id_user' => 'required',
+            'token' => 'required'
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => $validator->messages()
+            ]);
+        }
+
+        $token = $request->token;
+
+        $tokenDb = M_Admin::where('token', $token)->count();
+
+        if($tokenDb > 0) {
+            $key = env('APP_KEY');
+            $decoded = JWT::decode($token, $key, array('HS256'));
+            $decoded_array =(array) $decoded;
+
+            if($decoded_array['extime'] > time()) {
+                if(M_Admin::where('id_user', $request->id_user)->delete()) {
+                        return response()->json([
+                            'status' => 'berhasil',
+                            'message' => 'Data berhasil dihapus'
+                        ]);
+                } else {
+                    return response()->json([
+                        'status' => 'gagal',
+                        'message' => 'Data gagal dihapus'
+                    ]);
+                }
+
+            } else {
+                return response()->json([
+                    'status' => 'gagal',
+                    'message' => 'Token Kadaluwarsa'
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => 'Token Tidak Valid'
+            ]);
         }
     }
 }
