@@ -23,6 +23,8 @@ class VerifyCsrfToken extends Middleware
         '/tambahAdmin',
         '/loginAdmin',
         '/hapusAdmin',
-        '/listAdmin'
+        '/listAdmin',
+        '/tambahKonten',
+        '/ubahKonten'
     ];
 }
