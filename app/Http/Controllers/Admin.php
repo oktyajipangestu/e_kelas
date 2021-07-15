@@ -21,7 +21,7 @@ class Admin extends Controller
     public function tambahAdmin(Request $request) {
         $validator = Validator::make($request ->all(), [
             'nama' => 'required',
-            'email' => 'required | unique:tbl_admin',
+            'email' => 'required | unique:tbl_user',
             'password' => 'required',
             'token' => 'required'
         ]);
@@ -63,8 +63,53 @@ class Admin extends Controller
             } else {
                 return response()->json([
                     'status' => 'gagal',
-                    'message' => 'Token Kaddaluwarsa'
+                    'message' => 'Token Kadaluwarsa'
                 ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => 'Token Tidak Valid'
+            ]);
+        }
+    }
+
+    public function loginAdmin (Request $request) {
+        $validator = Validator::make($request ->all(), [
+            'email' => 'required | unique:tbl_user',
+            'password' => 'required',
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => $validator->getMessageBag()
+            ]);
+        }
+
+        $cek = M_Admin::where('email', $request->email)->count();
+        $admin = M_Admin::where('email', $request->email)->get();
+
+        if($cek > 0) {
+            foreach($admin as $adm) {
+                if($request->password == decrypt($adm->password)) {
+                    $key = env('APP_KEY');
+                    $data = array(
+                        'extime' => time()+(60*120),
+                        'id_admin' => $adm->id_user
+                    );
+                    $jwt = JWT::encode($data, $key);
+                    return response()->json([
+                        'status' => 'berhasil',
+                        'message' => 'Berhasil login',
+                        'token' => $jwt
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 'gagal',
+                        'message' => 'Password Salah'
+                    ]);
+                }
             }
         }
     }

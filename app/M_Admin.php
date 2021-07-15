@@ -8,7 +8,7 @@ class M_Admin extends Model
 {
     protected $table = 'tbl_user';
     protected $primaryKey = 'id_user';
-    protected $fillabel = [
+    protected $fillable = [
         'id_user',
         'nama',
         'email',
