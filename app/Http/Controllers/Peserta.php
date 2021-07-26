@@ -51,4 +51,55 @@ class Peserta extends Controller
             ]);
         }
     }
+
+    public function loginPeserta (Request $request) {
+        $validator = Validator::make($request ->all(), [
+            'email' => 'required',
+            'password' => 'required',
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => $validator->messages()
+            ]);
+        }
+
+        $cek = M_Peserta::where('email', $request->email)->count();
+        $peserta = M_Peserta::where('email', $request->email)->get();
+
+        if($cek > 0) {
+            foreach($peserta as $psrt) {
+                if($request->password == decrypt($psrt->password)) {
+                    $key = env('APP_KEY');
+                    $data = array(
+                        'extime' => time()+(60*120),
+                        'id_peserta' => $psrt->id_peserta
+                    );
+                    $jwt = JWT::encode($data, $key);
+
+                    M_Peserta::where('id_peserta', $psrt->id_peserta)->update(
+                        [
+                            'token' => $jwt
+                        ]
+                    );
+                    return response()->json([
+                        'status' => 'berhasil',
+                        'message' => 'Berhasil login',
+                        'token' => $jwt
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 'gagal',
+                        'message' => 'Password Salah'
+                    ]);
+                }
+            }
+        } else {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => 'Email belum terdaftar'
+            ]);
+        }
+    }
 }

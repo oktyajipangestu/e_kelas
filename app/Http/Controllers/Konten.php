@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\M_Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -14,7 +13,9 @@ use Illuminate\Support\Facades\Validator;
 
 use Illuminate\Contracts\Encryption\DecryptException;
 
+use App\M_Admin;
 use App\M_Materi;
+use App\M_Peserta;
 
 class Konten extends Controller
 {
@@ -201,6 +202,50 @@ class Konten extends Controller
         $token = $request->token;
 
         $tokenDb = M_Admin::where('token', $token)->count();
+
+        if($tokenDb > 0) {
+            $key = env('APP_KEY');
+            $decoded = JWT::decode($token, $key, array('HS256'));
+            $decoded_array =(array) $decoded;
+
+            if($decoded_array['extime'] > time()) {
+                $konten = M_Materi::get();
+
+                return response()->json([
+                    'status' => 'berhasil',
+                    'message' => 'Data berhasil diambil',
+                    'data' => $konten
+                ]);
+
+            } else {
+                return response()->json([
+                    'status' => 'gagal',
+                    'message' => 'Token Kadaluwarsa'
+                ]);
+            }
+        } else {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => 'Token Tidak Valid'
+            ]);
+        }
+    }
+
+    public function listKontenPeserta(Request $request) {
+        $validator = Validator::make($request ->all(), [
+            'token' => 'required'
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => $validator->messages()
+            ]);
+        }
+
+        $token = $request->token;
+
+        $tokenDb = M_Peserta::where('token', $token)->count();
 
         if($tokenDb > 0) {
             $key = env('APP_KEY');
