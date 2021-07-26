@@ -9,3 +9,4 @@ Route::post('/tambahKonten', 'Konten@tambahKonten');
 Route::post('/ubahKonten', 'Konten@ubahKonten');
 Route::post('/hapusKonten', 'Konten@hapusKonten');
 Route::post('/listKonten', 'Konten@listKonten');
+Route::post('/registrasi', 'Peserta@registrasi');
