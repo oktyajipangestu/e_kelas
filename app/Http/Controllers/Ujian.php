@@ -152,4 +152,78 @@ class Ujian extends Controller
             ]);
         }
     }
+
+
+    public function hitungSkor(Request $request) {
+        $token = $request->token;
+        $tokenDb = M_Peserta::where('token', $token)->count();
+
+        if($tokenDb > 0) {
+            $key = env('APP_KEY');
+            $decoded = JWT::decode($token, $key, array('HS256'));
+            $decoded_array =(array) $decoded;
+
+            if($decoded_array['extime'] > time()) {
+                $id_s = M_Skor::where('id_peserta', $decoded_array['id_peserta'])->where('status', '1')->first();
+                $jawaban = M_Jawaban::where('status_jawaban', '1')->where('id_skor', $id_s->id_skor)->count();
+
+                return response()->json([
+                    'status' => 'berhasil',
+                    'skor' => $jawaban
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'gagal',
+                    'message' => 'Token kadaluarsa'
+                ]);
+            }
+
+        } else {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => 'Token Tidak Valid'
+            ]);
+        }
+    }
+
+
+    public function selesaiUjian(Request $request) {
+        $token = $request->token;
+        $tokenDb = M_Peserta::where('token', $token)->count();
+
+        if($tokenDb > 0) {
+            $key = env('APP_KEY');
+            $decoded = JWT::decode($token, $key, array('HS256'));
+            $decoded_array =(array) $decoded;
+
+            if($decoded_array['extime'] > time()) {
+                $id_s = M_Skor::where('id_peserta', $decoded_array['id_peserta'])->where('status', '1')->first();
+
+                if(M_Skor::where('id_skor', $id_s->id_skor)->update([
+                    'status' => 0
+                ])) {
+                    return response()->json([
+                        'status' => 'berhasil',
+                        'message' => 'Data berhasil diubah'
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 'gagal',
+                        'message' => 'Data gagal diubah'
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'status' => 'gagal',
+                    'message' => 'Token kadaluarsa'
+                ]);
+            }
+
+        } else {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => 'Token Tidak Valid'
+            ]);
+        }
+    }
 }

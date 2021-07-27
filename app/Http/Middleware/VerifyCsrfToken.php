@@ -32,6 +32,8 @@ class VerifyCsrfToken extends Middleware
         '/loginPeserta',
         '/listKontenPeserta',
         '/listSoal',
-        '/jawab'
+        '/jawab',
+        '/hitungSkor',
+        '/selesaiUjian'
     ];
 }

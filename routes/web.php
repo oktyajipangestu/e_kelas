@@ -17,3 +17,5 @@ Route::post('/loginPeserta', 'Peserta@loginPeserta');
 
 Route::post('/listSoal', 'Ujian@listSoal');
 Route::post('/jawab', 'Ujian@jawab');
+Route::post('/hitungSkor', 'Ujian@hitungSkor');
+Route::post('/selesaiUjian', 'Ujian@selesaiUjian');
