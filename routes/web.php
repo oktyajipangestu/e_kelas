@@ -14,3 +14,6 @@ Route::post('/listKontenPeserta', 'Konten@listKontenPeserta');
 
 Route::post('/registrasi', 'Peserta@registrasi');
 Route::post('/loginPeserta', 'Peserta@loginPeserta');
+
+Route::post('/listSoal', 'Ujian@listSoal');
+Route::post('/jawab', 'Ujian@jawab');
